@@ -1,2 +1,4 @@
 # terraform-aws-quicksight-billing-dashboard-configuration
-Terraform module that configures KeyCloak and AWS QuickSight dashboards for billing
+- This module deploys aws quicksight dashboards dashboards and sets up keycloak resources required for having SSO
+
+- The module assumes that an Identity provider and a keyclaok realm already setup
