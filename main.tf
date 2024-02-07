@@ -88,7 +88,7 @@ resource "keycloak_generic_protocol_mapper" "quicksight_mapper_session_name" {
   name            = "Session Name"
   protocol_mapper = "saml-user-property-mapper"
   config = {
-    "user.attribute"       = "username"
+    "user.attribute"       = "email"
     "friendly.name"        = "Session Name"
     "attribute.nameformat" = "Basic"
     "attribute.name"       = "https://aws.amazon.com/SAML/Attributes/RoleSessionName"
