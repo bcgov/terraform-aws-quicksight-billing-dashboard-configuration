@@ -123,6 +123,20 @@ resource "keycloak_generic_protocol_mapper" "quicksight_mapper_session_duration"
   }
 }
 
+resource "keycloak_generic_protocol_mapper" "quicksight_mapper_aws_principaltag" {
+  realm_id        = data.keycloak_realm.realm.id
+  client_id       = keycloak_saml_client.Quicksight.id
+  protocol        = "saml"
+  name            = "PrincipalTag:Email"
+  protocol_mapper = "saml-user-property-mapper"
+  config = {
+    "user.attribute"       = "email"
+    "friendly.name"        = "PrincipalTag:Email"
+    "attribute.nameformat" = "Basic"
+    "attribute.name"       = "https://aws.amazon.com/SAML/Attributes/PrincipalTag:Email"
+  }
+}
+
 # Storing rls lambda clinet id and secret values in aws secrets manager
 resource "aws_secretsmanager_secret" "client_secret" {
   name                    = "keycloak/client/${keycloak_openid_client.rls_lambda_client.client_id}"
@@ -158,6 +172,18 @@ resource "aws_iam_role" "quicksight_admin" {
           }
         }
       },
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = var.aws_saml_idp_arn
+        }
+        Action = "sts:TagSession"
+        Condition = {
+          StringLike = {
+            "aws:RequestTag/Email" = "*"
+          }
+        }
+      }
     ]
   })
 }
@@ -204,6 +230,18 @@ resource "aws_iam_role" "quicksight_reader" {
           }
         }
       },
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = var.aws_saml_idp_arn
+        }
+        Action = "sts:TagSession"
+        Condition = {
+          StringLike = {
+            "aws:RequestTag/Email" = "*"
+          }
+        }
+      }
     ]
   })
 }

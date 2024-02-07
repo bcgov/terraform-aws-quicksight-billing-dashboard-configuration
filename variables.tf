@@ -56,12 +56,12 @@ variable "session_duration" {
   default     = 10800 # 3 hours
 }
 
-variable "idp_initiated_sso_relay_state"{
-    description = "Url to redirect once the authentication is completed"
-    type = string
+variable "idp_initiated_sso_relay_state" {
+  description = "Url to redirect once the authentication is completed"
+  type        = string
 }
 
-variable "idp_initiated_sso_url_name"{
-    description = "URL fragment name to reference client when you want to do idp initiated sso "
-    type = string
+variable "idp_initiated_sso_url_name" {
+  description = "URL fragment name to reference client when you want to do idp initiated sso "
+  type        = string
 }
