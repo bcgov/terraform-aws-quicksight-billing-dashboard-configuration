@@ -50,3 +50,18 @@ variable "aws_saml_idp_arn" {
   type        = string
 }
 
+variable "session_duration" {
+  description = "Session duration length in seconds"
+  type        = number
+  default     = 10800 # 3 hours
+}
+
+variable "idp_initiated_sso_relay_state"{
+    description = "Url to redirect once the authentication is completed"
+    type = string
+}
+
+variable "quicksight_client_base_url"{
+    description = "Base Url for the QuickSight client"
+    type = string
+}

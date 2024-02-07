@@ -70,11 +70,11 @@ resource "keycloak_saml_client" "Quicksight" {
     "https://signin.aws.amazon.com/saml"
   ]
 
-  base_url = "/realms/public-cloud/protocol/saml/clients/amazon-qs"
+  base_url = var.quicksight_client_base_url
 
   idp_initiated_sso_url_name = "amazon-qs"
 
-  idp_initiated_sso_relay_state = "https://ca-central-1.quicksight.aws.amazon.com/sn/start/dashboards"
+  idp_initiated_sso_relay_state = var.idp_initiated_sso_relay_state
 
   assertion_consumer_post_url = "https://signin.aws.amazon.com/saml"
   full_scope_allowed          = false
@@ -116,7 +116,7 @@ resource "keycloak_generic_protocol_mapper" "quicksight_mapper_session_duration"
   name            = "Session Duration"
   protocol_mapper = "saml-hardcode-attribute-mapper"
   config = {
-    "attribute.value"      = 28800
+    "attribute.value"      = var.session_duration
     "friendly.name"        = "Session Duration"
     "attribute.nameformat" = "Basic"
     "attribute.name"       = "https://aws.amazon.com/SAML/Attributes/SessionDuration"
@@ -127,7 +127,7 @@ resource "keycloak_generic_protocol_mapper" "quicksight_mapper_session_duration"
 resource "aws_secretsmanager_secret" "client_secret" {
   name                    = "keycloak/client/${keycloak_openid_client.rls_lambda_client.client_id}"
   description             = "Secrets for ${keycloak_openid_client.rls_lambda_client.client_id} Keycloak Client"
-  recovery_window_in_days = 0 # Gibing it 0 deletes the secret without scheduling it for deletion
+  recovery_window_in_days = 0 # Giving it 0 deletes the secret without scheduling it for deletion
 }
 
 resource "aws_secretsmanager_secret_version" "rls_lambda_client_secret_version" {
