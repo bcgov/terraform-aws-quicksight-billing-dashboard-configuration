@@ -70,9 +70,9 @@ resource "keycloak_saml_client" "Quicksight" {
     "https://signin.aws.amazon.com/saml"
   ]
 
-  base_url = var.quicksight_client_base_url
+  base_url = "/auth/realms/${var.kc_realm}/protocol/saml/clients/${var.idp_initiated_sso_url_name}"
 
-  idp_initiated_sso_url_name = "amazon-qs"
+  idp_initiated_sso_url_name = var.idp_initiated_sso_url_name
 
   idp_initiated_sso_relay_state = var.idp_initiated_sso_relay_state
 

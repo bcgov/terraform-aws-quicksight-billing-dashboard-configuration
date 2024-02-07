@@ -61,7 +61,7 @@ variable "idp_initiated_sso_relay_state"{
     type = string
 }
 
-variable "quicksight_client_base_url"{
-    description = "Base Url for the QuickSight client"
+variable "idp_initiated_sso_url_name"{
+    description = "URL fragment name to reference client when you want to do idp initiated sso "
     type = string
 }
