@@ -17,7 +17,7 @@ resource "keycloak_openid_client" "rls_lambda_client" {
   realm_id                            = data.keycloak_realm.realm.id
   description                         = "Client for rls-lambda"
   enabled                             = true
-  full_scope_allowed                  = false
+  full_scope_allowed                  = true
   standard_flow_enabled               = false
   service_accounts_enabled            = true
   backchannel_logout_session_required = true
@@ -79,7 +79,13 @@ resource "keycloak_saml_client" "Quicksight" {
   assertion_consumer_post_url = "https://signin.aws.amazon.com/saml"
   full_scope_allowed          = false
 }
-
+resource "aws_ssm_parameter" "quicksight_saml_client_id" {
+  provider    = aws.master-account
+  name        = "/keycloak/quicksight_client/client_id"
+  description = "Quicksight client's UUID"
+  type        = "SecureString"
+  value       = keycloak_saml_client.Quicksight.id
+}
 # Mappers
 resource "keycloak_generic_protocol_mapper" "quicksight_mapper_session_name" {
   realm_id        = data.keycloak_realm.realm.id
@@ -279,4 +285,3 @@ resource "keycloak_role" "quicksight_role" {
   name        = "${each.value},${var.aws_saml_idp_arn}"
   description = "${each.key} role for QuickSight"
 }
-# terraform to deploy CFN's
