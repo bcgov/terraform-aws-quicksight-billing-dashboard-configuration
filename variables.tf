@@ -130,7 +130,6 @@ variable "ClientSecretKey" {
 variable "KeycloakURL" {
   type        = string
   description = "The base URL (without http(s)://) of your Keycloak deployment. The Keycloak URL must not contain http(s)://."
-  default     = "test.loginproxy.gov.bc.ca"
 }
 
 
@@ -175,7 +174,6 @@ variable "bcgov_roles_access" {
 }
 
 variable "CURBucketPath" {
-  description = "S3 path for CUR data.In general, you want to navigate to the folder just before the year partition folders. In this example, the next folder in this path would be year=2024/"
+  description = "S3 path for CUR data.In general, you want to navigate to the folder just before the year partition folders. In this example, the next folder in this path would be year=2024/. Example: s3://<Bucket Name>/<Path>"
   type        = string
-  default     = "s3://cur-replication-from-master-485441000446/940346833507/cur/Cost-and-Usage-Report/Cost-and-Usage-Report/"
 }

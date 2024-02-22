@@ -148,27 +148,11 @@ exports.handler = async function () {
       for (const role of quickSightRoles) {
         const quickSightRoleName = role.name.split(",")[0].split("/")[1];
         console.log(quickSightRoleName)
-
-        // const awsAccountIds = await httpsRequest(
-        //   "GET",
-        //   `/auth/admin/realms/${REALM_NAME}/users/${user["id"]}/role-mappings/clients/${awsClient[0].id}/composite`
-        // ) // For each user check what aws client roles does the user has access to.
-        //   .then((roles) => {
-        //     return roles.map((role) => role.name.split(":")[4]);
-        //   })
-        //   .then((roles) => {
-        //     return [...new Set(roles)];
-        //   });
-
-        // rlsMap[`${quickSightRoleName}/${user.email}`] = awsAccountIds;
-
-        //modify code from here 
         // For each user check what AWS client roles does the user has access to.
           const awsRoles = await httpsRequest(
             "GET",
             `/auth/admin/realms/${REALM_NAME}/users/${user["id"]}/role-mappings/clients/${awsClient[0].id}/composite`
           );
-          console.log(awsRoles)
           // Filter roles to only include those containing 'WORKLOAD_billing_viewer' in their name.
           const filteredRoles = awsRoles.filter(role => role.name.includes(BCGOV_ROLES_FOR_ACCESS));
 
@@ -197,13 +181,6 @@ exports.handler = async function () {
   }
 
   console.log("CSV data:\n", csvData);
-  // try {
-  //   await fs.writeFile('rls.csv', csvData);
-  //   console.log('CSV file has been saved/overwritten successfully.');
-  // } catch (error) {
-  //   console.error('Error writing CSV file:', error);
-  // }
-
 
   try {
     const s3Response = await s3Client.send(

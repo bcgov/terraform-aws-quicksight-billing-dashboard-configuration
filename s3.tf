@@ -52,9 +52,6 @@ resource "aws_s3_bucket_policy" "destination_bucket_policy" {
             "${aws_s3_bucket.destination_bucket.arn}/*"
           ],
           "Condition" : {
-            # "StringEquals": {
-            #     "aws:PrincipalOrgID": "o-ws5r3eublf"
-            # },
             "ArnLike" : {
               "aws:PrincipalARN" : "${aws_iam_role.replication_role.arn}"
             }
