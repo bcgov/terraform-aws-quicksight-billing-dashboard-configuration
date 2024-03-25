@@ -82,11 +82,6 @@ variable "operations_account_id" {
   type        = string
 }
 
-variable "management_cur_bucket_name" {
-  description = "Name of the management account bucket where the CUR already exists"
-  type        = string
-}
-
 variable "cur_export_bucket_name"{
   description = "Name of the bucket created in the management account to store exported cur reports"
   type = string
