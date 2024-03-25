@@ -2,6 +2,7 @@
 # Rls table
 resource "aws_glue_catalog_table" "rls_glue_table" {
   name          = "rls"
+  description   = "CUDOSv5 Dashboard URL: ${module.cid_dashboards.stack_outputs["CUDOSv5DashboardURL"]}, Cost Intelligence Dashboard URL: ${module.cid_dashboards.stack_outputs["CostIntelligenceDashboardURL"]}"
   database_name = "cid_cur"
   catalog_id    = var.operations_account_id
 
@@ -65,13 +66,23 @@ resource "aws_quicksight_data_source" "quicksight_data_source" {
     ]
     principal = "arn:aws:quicksight:${var.aws_region}:${var.operations_account_id}:user/default/${var.QuickSightUser}"
   }
+  tags = {
+    "CUDOSv5DashboardURL" = module.cid_dashboards.stack_outputs["CUDOSv5DashboardURL"]
+    "CostIntelligenceDashboardURL" = module.cid_dashboards.stack_outputs["CostIntelligenceDashboardURL"]
+  }
 
   lifecycle {
     ignore_changes = [ssl_properties]
   }
 }
 
+# resource "null_resource" "delay_after_creation" {
+#   depends_on = [aws_quicksight_data_source.quicksight_data_source]
 
+#   provisioner "local-exec" {
+#     command = "sleep 30" # Delay for 30 seconds
+#   }
+# }
 # Quicksight dataset
 
 resource "aws_quicksight_data_set" "rls_athena_data_set" {
@@ -113,6 +124,7 @@ resource "aws_quicksight_data_set" "rls_athena_data_set" {
     ]
     principal = "arn:aws:quicksight:${var.aws_region}:${var.operations_account_id}:user/default/${var.QuickSightUser}"
   }
+  depends_on = [aws_quicksight_data_source.quicksight_data_source]
 }
 
 
@@ -295,6 +307,7 @@ resource "aws_scheduler_schedule" "rls_lambda_schedule" {
 #AccountMappingTable
 resource "aws_glue_catalog_table" "account_mapping_table" {
   name          = "account_mapping"
+  description   = "CUDOSv5 Dashboard URL: ${module.cid_dashboards.stack_outputs["CUDOSv5DashboardURL"]}, Cost Intelligence Dashboard URL: ${module.cid_dashboards.stack_outputs["CostIntelligenceDashboardURL"]}"
   database_name = "cid_cur"
   catalog_id    = var.operations_account_id
 
