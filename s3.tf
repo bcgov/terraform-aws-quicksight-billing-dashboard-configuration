@@ -8,12 +8,25 @@ data "aws_kms_key" "master_account_key_by_alias" {
   provider = aws.master-account
   key_id   = "alias/${var.master_account_kms_key_alias}"
 }
+# # Bucket for the cost and usage report exports
+resource "aws_s3_bucket" "cur_export_bucket" {
+  provider = aws.master-account
+  bucket = var.cur_export_bucket_name
+  force_destroy = true
+}
 
+resource "aws_s3_bucket_versioning" "cur_export_bucket_versioning" {
+  provider = aws.master-account
+  bucket = aws_s3_bucket.cur_export_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
 
-# To create s3 replication rules
 # Resource to create an s3 bucket in the operations account
 resource "aws_s3_bucket" "destination_bucket" {
   bucket = var.cur_replication_bucket_name
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_versioning" "destination_bucket_versioning" {
@@ -115,8 +128,8 @@ resource "aws_iam_policy" "replication_policy" {
           ],
           "Effect" : "Allow",
           "Resource" : [
-            "arn:aws:s3:::${var.management_cur_bucket_name}",
-            "arn:aws:s3:::${var.management_cur_bucket_name}/*",
+            "${aws_s3_bucket.cur_export_bucket.arn}",
+            "${aws_s3_bucket.cur_export_bucket.arn}/*",
             "${aws_s3_bucket.destination_bucket.arn}",
             "${aws_s3_bucket.destination_bucket.arn}/*"
           ]
@@ -148,8 +161,8 @@ resource "aws_iam_role_policy_attachment" "replication_role_policy_attachment" {
 # # Resource to add replication rule to that bucket
 resource "aws_s3_bucket_replication_configuration" "replication" {
   provider   = aws.master-account
-  depends_on = [aws_s3_bucket_versioning.destination_bucket_versioning]
-  bucket     = var.management_cur_bucket_name
+  depends_on = [aws_s3_bucket_versioning.cur_export_bucket_versioning]
+  bucket     = aws_s3_bucket.cur_export_bucket.id
   role       = aws_iam_role.replication_role.arn
 
   rule {
