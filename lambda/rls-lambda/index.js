@@ -35,30 +35,28 @@ const AWS_CLIENT_NAME = process.env.AWS_CLIENT_NAME;
 
 let bearerToken = "";
 
-async function httpsRequest(method, path) {
+async function httpsRequest(method, path, queryParams = '') {
   const options = {
     hostname: KC_URL,
     port: 443,
-    path: path,
+    path: `${path}${queryParams}`,
     method: method,
     headers: {
       Authorization: "Bearer " + bearerToken,
     },
   };
 
-  const response = await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const req = https.request(options, (res) => {
       let data = "";
       res.on("data", (chunk) => {
         data += chunk;
       });
-      res.on("end", () => resolve(data));
+      res.on("end", () => resolve(JSON.parse(data)));
+      res.on("error", (e) => reject(e));
     });
-    req.on("error", (error) => reject(error));
     req.end();
   });
-
-  return JSON.parse(response);
 }
 exports.handler = async function () {
   const authOptions = {
@@ -132,10 +130,25 @@ exports.handler = async function () {
     (client) => client.clientId === AWS_CLIENT_NAME
   );
 
-  const users = await httpsRequest(
-    "GET",
-    `/auth/admin/realms/${REALM_NAME}/users`
-  );
+  let users = [];
+  let first = 0;
+  const max = 100;
+
+  while (true) {
+    const batchUsers = await httpsRequest(
+      "GET",
+      `/auth/admin/realms/${REALM_NAME}/users`,
+      `?first=${first}&max=${max}`
+    );
+
+    users = users.concat(batchUsers);
+
+    if (batchUsers.length < max) {
+      break;
+    }
+
+    first += max;
+  }
   var rlsMap = [];
 
   for (const user of users) {

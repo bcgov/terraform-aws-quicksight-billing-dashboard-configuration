@@ -177,3 +177,8 @@ variable "CURBucketPath" {
   description = "S3 path for CUR data.In general, you want to navigate to the folder just before the year partition folders. In this example, the next folder in this path would be year=2024/. Example: s3://<Bucket Name>/<Path>"
   type        = string
 }
+
+variable "cost_and_usage_report_table_name"{
+  description = "name of the cost and usage report table in athena"
+  type        = string
+}

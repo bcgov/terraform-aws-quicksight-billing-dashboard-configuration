@@ -228,7 +228,7 @@ resource "aws_lambda_function" "rls_lambda" {
   runtime       = "nodejs20.x"
   architectures = ["x86_64"]
   memory_size   = 128
-  timeout       = 60
+  timeout       = 600
 
   filename         = data.archive_file.rls_lambda_zip.output_path
   source_code_hash = data.archive_file.rls_lambda_zip.output_base64sha256
@@ -481,7 +481,7 @@ resource "aws_lambda_function" "account_mapping_lambda" {
   runtime       = "nodejs20.x"
   architectures = ["x86_64"]
   memory_size   = 128
-  timeout       = 60
+  timeout       = 300
 
   filename         = data.archive_file.account_map_lambda_zip.output_path
   source_code_hash = data.archive_file.account_map_lambda_zip.output_base64sha256
@@ -491,6 +491,7 @@ resource "aws_lambda_function" "account_mapping_lambda" {
       RLS_CSV_FOLDER_URI         = "s3://${aws_s3_bucket.destination_bucket.id}/rls/"
       ACCOUNT_MAPPING_TABLE_NAME = aws_glue_catalog_table.account_mapping_table.name
       CUR_TALBE_NAME             = local.glue_table_name
+      COST_AND_USAGE_REPORT_TABLE = var.cost_and_usage_report_table_name
     }
   }
 }
