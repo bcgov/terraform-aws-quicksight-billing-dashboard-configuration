@@ -106,7 +106,7 @@ const {
                 line_item_usage_account_id
               , bill_payer_account_id
               FROM
-              cid_cur.\`${COST_AND_USAGE_REPORT_TABLE}\`
+              cid_cur.${COST_AND_USAGE_REPORT_TABLE}
             )  a
             LEFT JOIN (
               SELECT DISTINCT
