@@ -491,6 +491,7 @@ resource "aws_lambda_function" "account_mapping_lambda" {
       RLS_CSV_FOLDER_URI         = "s3://${aws_s3_bucket.destination_bucket.id}/rls/"
       ACCOUNT_MAPPING_TABLE_NAME = aws_glue_catalog_table.account_mapping_table.name
       CUR_TALBE_NAME             = local.glue_table_name
+      COST_AND_USAGE_REPORT_TABLE = var.cost_and_usage_report_table_name
     }
   }
 }

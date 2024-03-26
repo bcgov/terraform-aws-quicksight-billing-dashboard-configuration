@@ -12,6 +12,7 @@ const {
 
   const RLS_CSV_FOLDER_URI = process.env.RLS_CSV_FOLDER_URI;
   const ACCOUNT_MAPPING_TABLE_NAME = process.env.ACCOUNT_MAPPING_TABLE_NAME;
+  const COST_AND_USAGE_REPORT_TABLE = process.env.COST_AND_USAGE_REPORT_TABLE;
 
   const orgClient = new OrganizationsClient({ region: "ca-central-1" });
   const s3Client = new S3Client({ region: "ca-central-1" });
@@ -105,7 +106,7 @@ const {
                 line_item_usage_account_id
               , bill_payer_account_id
               FROM
-                cid_cur.cost_and_usage_report
+              cid_cur.\`${COST_AND_USAGE_REPORT_TABLE}\`
             )  a
             LEFT JOIN (
               SELECT DISTINCT
