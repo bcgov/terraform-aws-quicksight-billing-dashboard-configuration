@@ -23,6 +23,8 @@
 - After copying CUR data to the bucket, ensure to manually run the data crawler if immediate data access is required.
 - The RLS Lambda function will synchronize Keycloak users with QuickSight roles, updating access permissions based on user roles and associated accounts. It runs every 30 minutes from 8 AM to 5 PM, Monday through Friday, adhering to QuickSight's data refresh limits.
 - Manually run the deployed Account Mapping lambda and the Rls lambda that runs on a schedule for the first time, so that all the existing AWS accounts are mapped and all the users access information is updated
+- Quicksight needs to be given appropriate permissions so that it can access the s3 bucket where the cur data is stored and access Amazon Athena, We can do this by heading over to manage quicksight from the quicksight dashboard and using the Security & permissions section
+- Email Syncing for Federated Users setting is turned on to allow QuickSight to use a preconfigured email address passed by your identity provider when provisioning new users to this account. This can be done in the Single-ign-on(sso) section of the quicksight settings.
 - The workload sso configuration should be deployed so that all the AWS Billing Viewer roles have the Quicksight Reader role attached to it. 
 # Accessing the Dashboards
 - Once the solution is deployed and configured, users can log in with their designated QuickSight roles (Admin or Reader) to access the relevant dashboards. Data visibility is controlled through RLS, ensuring users only access permitted account data.
