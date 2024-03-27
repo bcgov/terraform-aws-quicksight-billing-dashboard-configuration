@@ -67,7 +67,7 @@ resource "aws_quicksight_data_source" "quicksight_data_source" {
     principal = "arn:aws:quicksight:${var.aws_region}:${var.operations_account_id}:user/default/${var.QuickSightUser}"
   }
   tags = {
-    "CUDOSv5DashboardURL" = module.cid_dashboards.stack_outputs["CUDOSv5DashboardURL"]
+    "CUDOSv5DashboardURL"          = module.cid_dashboards.stack_outputs["CUDOSv5DashboardURL"]
     "CostIntelligenceDashboardURL" = module.cid_dashboards.stack_outputs["CostIntelligenceDashboardURL"]
   }
 
@@ -488,9 +488,9 @@ resource "aws_lambda_function" "account_mapping_lambda" {
 
   environment {
     variables = {
-      RLS_CSV_FOLDER_URI         = "s3://${aws_s3_bucket.destination_bucket.id}/rls/"
-      ACCOUNT_MAPPING_TABLE_NAME = aws_glue_catalog_table.account_mapping_table.name
-      CUR_TALBE_NAME             = local.glue_table_name
+      RLS_CSV_FOLDER_URI          = "s3://${aws_s3_bucket.destination_bucket.id}/rls/"
+      ACCOUNT_MAPPING_TABLE_NAME  = aws_glue_catalog_table.account_mapping_table.name
+      CUR_TALBE_NAME              = local.glue_table_name
       COST_AND_USAGE_REPORT_TABLE = var.cost_and_usage_report_table_name
     }
   }

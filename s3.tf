@@ -10,14 +10,14 @@ data "aws_kms_key" "master_account_key_by_alias" {
 }
 # # Bucket for the cost and usage report exports
 resource "aws_s3_bucket" "cur_export_bucket" {
-  provider = aws.master-account
-  bucket = var.cur_export_bucket_name
+  provider      = aws.master-account
+  bucket        = var.cur_export_bucket_name
   force_destroy = true
 }
 
 resource "aws_s3_bucket_versioning" "cur_export_bucket_versioning" {
   provider = aws.master-account
-  bucket = aws_s3_bucket.cur_export_bucket.id
+  bucket   = aws_s3_bucket.cur_export_bucket.id
   versioning_configuration {
     status = "Enabled"
   }
@@ -25,7 +25,7 @@ resource "aws_s3_bucket_versioning" "cur_export_bucket_versioning" {
 
 # Resource to create an s3 bucket in the operations account
 resource "aws_s3_bucket" "destination_bucket" {
-  bucket = var.cur_replication_bucket_name
+  bucket        = var.cur_replication_bucket_name
   force_destroy = true
 }
 
