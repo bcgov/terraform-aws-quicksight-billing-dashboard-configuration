@@ -82,9 +82,9 @@ variable "operations_account_id" {
   type        = string
 }
 
-variable "cur_export_bucket_name"{
+variable "cur_export_bucket_name" {
   description = "Name of the bucket created in the management account to store exported cur reports"
-  type = string
+  type        = string
 }
 
 variable "master_account_kms_key_alias" {
@@ -178,7 +178,7 @@ variable "CURBucketPath" {
   type        = string
 }
 
-variable "cost_and_usage_report_table_name"{
+variable "cost_and_usage_report_table_name" {
   description = "name of the cost and usage report table in athena"
   type        = string
 }
