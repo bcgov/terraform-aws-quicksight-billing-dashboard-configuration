@@ -42,3 +42,6 @@ The RLS feature in this solution is pivotal for controlling access to the QuickS
 - Impact on Dashboard Access: As a result of this RLS configuration, users will see a tailored view of the QuickSight dashboards. They will only have visibility into the cost and usage data of the AWS accounts where they hold the "Billing viewer" role, enhancing security and ensuring data relevance.
 
 - By integrating this role-based access control, the solution ensures that the QuickSight dashboards provide a secure, customized view for each user, aligning with their specific access rights and roles within the AWS environment.
+
+<!-- BEGIN_TF_DOCS -->
+<!-- END_TF_DOCS -->
