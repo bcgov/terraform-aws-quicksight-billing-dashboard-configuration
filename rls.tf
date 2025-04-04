@@ -124,6 +124,9 @@ resource "aws_quicksight_data_set" "rls_athena_data_set" {
     ]
     principal = "arn:aws:quicksight:${var.aws_region}:${var.operations_account_id}:user/default/${var.QuickSightUser}"
   }
+  lifecycle {
+    ignore_changes = [refresh_properties]
+  }
   depends_on = [aws_quicksight_data_source.quicksight_data_source]
 }
 
