@@ -1,8 +1,12 @@
 # Deployment of RLS to limit user's view onto QuickSight dashboards
 # Rls table
+
+
+data "aws_ssoadmin_instances" "iam_identity_center_instance" {}
+
 resource "aws_glue_catalog_table" "rls_glue_table" {
   name          = "rls"
-  description   = "CUDOSv5 Dashboard URL: ${module.cid_dashboards.stack_outputs["CUDOSv5DashboardURL"]}, Cost Intelligence Dashboard URL: ${module.cid_dashboards.stack_outputs["CostIntelligenceDashboardURL"]}"
+  description   = "CUDOSv5 Dashboard URL: ${var.CUDOSv5DashboardURL}, Cost Intelligence Dashboard URL: ${var.CostIntelligenceDashboardURL}"
   database_name = "cid_cur"
   catalog_id    = var.operations_account_id
 
@@ -22,7 +26,7 @@ resource "aws_glue_catalog_table" "rls_glue_table" {
       type = "string"
     }
     # compressed        = false
-    location          = "s3://${aws_s3_bucket.destination_bucket.id}/rls/"
+    location          = "s3://${var.destination_cur_bucket_name}/rls/"
     input_format      = "org.apache.hadoop.mapred.TextInputFormat"
     number_of_buckets = -1
     output_format     = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
@@ -30,6 +34,7 @@ resource "aws_glue_catalog_table" "rls_glue_table" {
     ser_de_info {
       parameters = {
         "separatorChar" = ","
+        "quoteChar"     = "\""
       }
       serialization_library = "org.apache.hadoop.hive.serde2.OpenCSVSerde"
     }
@@ -67,8 +72,8 @@ resource "aws_quicksight_data_source" "quicksight_data_source" {
     principal = "arn:aws:quicksight:${var.aws_region}:${var.operations_account_id}:user/default/${var.QuickSightUser}"
   }
   tags = {
-    "CUDOSv5DashboardURL"          = module.cid_dashboards.stack_outputs["CUDOSv5DashboardURL"]
-    "CostIntelligenceDashboardURL" = module.cid_dashboards.stack_outputs["CostIntelligenceDashboardURL"]
+    "CUDOSv5DashboardURL"          = var.CUDOSv5DashboardURL
+    "CostIntelligenceDashboardURL" = var.CostIntelligenceDashboardURL
   }
 
   lifecycle {
@@ -98,7 +103,7 @@ resource "aws_quicksight_data_set" "rls_athena_data_set" {
       name            = aws_glue_catalog_table.rls_glue_table.name
       schema          = "cid_cur"
       input_columns {
-        name = "UserName"
+        name = "username"
         type = "STRING"
       }
       input_columns {
@@ -146,10 +151,16 @@ resource "aws_iam_role" "RLSLambdaExecutionRole" {
     ]
   })
   path = "/"
-  managed_policy_arns = [
-    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-    # "arn:aws:iam::aws:policy/AWSOrganizationsFullAccess"
-  ]
+}
+
+resource "aws_iam_role_policy_attachment" "rls_lambda_basic_execution" {
+  role       = aws_iam_role.RLSLambdaExecutionRole.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "org_full_access" {
+  role       = aws_iam_role.RLSLambdaExecutionRole.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSOrganizationsFullAccess"
 }
 
 resource "aws_iam_role_policy" "QuickSightPermissions" {
@@ -177,21 +188,23 @@ resource "aws_iam_role_policy" "QuickSightPermissions" {
   })
 }
 
-resource "aws_iam_role_policy" "SecretsManagerPermissions" {
-  name = "SecretsManagerPermissions"
+resource "aws_iam_role_policy" "IdentityStorePermissions" {
+  name = "IdentityStorePermissions"
   role = aws_iam_role.RLSLambdaExecutionRole.id
+
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "secretsmanager:DescribeSecret",
-          "secretsmanager:GetSecretValue",
-        ]
-        Effect   = "Allow"
-        Resource = "${aws_secretsmanager_secret.client_secret.arn}"
-      },
-    ]
+    Statement = [{
+      Action = [
+        "identitystore:ListGroups",
+        "identitystore:ListGroupMemberships",
+        "identitystore:DescribeUser",
+        "identitystore:CreateGroupMembership",
+        "identitystore:DeleteGroupMembership"
+      ]
+      Effect   = "Allow"
+      Resource = "*"
+    }]
   })
 }
 
@@ -208,8 +221,8 @@ resource "aws_iam_role_policy" "S3Permissions" {
         ]
         Effect = "Allow"
         Resource = [
-          "arn:aws:s3:::${aws_s3_bucket.destination_bucket.id}",
-          "arn:aws:s3:::${aws_s3_bucket.destination_bucket.id}/*"
+          "arn:aws:s3:::${var.destination_cur_bucket_name}",
+          "arn:aws:s3:::${var.destination_cur_bucket_name}/*"
         ]
       },
     ]
@@ -219,16 +232,16 @@ resource "aws_iam_role_policy" "S3Permissions" {
 # Rls lambda function
 data "archive_file" "rls_lambda_zip" {
   type        = "zip"
-  source_file = "${path.module}/lambda/rls-lambda/index.js"
-  output_path = "${path.module}/lambda/rls-lambda/index.zip"
+  source_file = "${path.root}/lambda/rls-lambda/index.py"
+  output_path = "${path.root}/lambda/rls-lambda/index.zip"
 }
 
 resource "aws_lambda_function" "rls_lambda" {
   function_name = "RLSLambda"
   description   = "Creates the RLS CSV file and refreshes all datasets that use it"
   role          = aws_iam_role.RLSLambdaExecutionRole.arn
-  handler       = "index.handler"
-  runtime       = "nodejs20.x"
+  handler       = "index.lambda_handler"
+  runtime       = "python3.10"
   architectures = ["x86_64"]
   memory_size   = 128
   timeout       = 600
@@ -238,20 +251,19 @@ resource "aws_lambda_function" "rls_lambda" {
 
   environment {
     variables = {
-      SECRET_NAME              = aws_secretsmanager_secret.client_secret.name
-      CLIENT_ID_SECRET_KEY     = var.ClientIdKey
-      CLIENT_SECRET_SECRET_KEY = var.ClientSecretKey
-      REALM_NAME               = var.kc_realm
-      KEYCLOAK_URL             = var.KeycloakURL
-      DATASET_ARN              = aws_quicksight_data_set.rls_athena_data_set.arn
-      RLS_CSV_FOLDER_URI       = "s3://${aws_s3_bucket.destination_bucket.id}/rls/"
-      AWS_ACCOUNT_ID           = var.operations_account_id
-      QUICKSIGHT_CLIENT_NAME   = var.quicksight_client_id
-      AWS_CLIENT_NAME          = var.AWSClientName
-      BCGOV_ROLES_FOR_ACCESS   = var.bcgov_roles_access
+      DATASET_ARN                   = aws_quicksight_data_set.rls_athena_data_set.arn
+      RLS_CSV_BUCKET_NAME           = var.destination_cur_bucket_name
+      AWS_ACCOUNT_ID                = var.operations_account_id
+      IDENTITY_STORE_ID             = tolist(data.aws_ssoadmin_instances.iam_identity_center_instance.identity_store_ids)[0]
+      BILLING_GROUP_REGEX           = var.billing_group_regex
+      QUICKSIGHT_READER_GROUP_NAME  =  var.quicksight_reader_group_name
     }
   }
-  depends_on = [aws_secretsmanager_secret.client_secret]
+    lifecycle {
+    ignore_changes = [
+      environment[0].variables["DATASET_ARN"]
+    ]
+  }
 }
 
 resource "aws_iam_role" "lambda_schedule_role" {
@@ -310,7 +322,7 @@ resource "aws_scheduler_schedule" "rls_lambda_schedule" {
 #AccountMappingTable
 resource "aws_glue_catalog_table" "account_mapping_table" {
   name          = "account_mapping"
-  description   = "CUDOSv5 Dashboard URL: ${module.cid_dashboards.stack_outputs["CUDOSv5DashboardURL"]}, Cost Intelligence Dashboard URL: ${module.cid_dashboards.stack_outputs["CostIntelligenceDashboardURL"]}"
+  description   = "CUDOSv5 Dashboard URL: ${var.CUDOSv5DashboardURL}, Cost Intelligence Dashboard URL: ${var.CostIntelligenceDashboardURL}"
   database_name = "cid_cur"
   catalog_id    = var.operations_account_id
 
@@ -346,7 +358,7 @@ resource "aws_glue_catalog_table" "account_mapping_table" {
     }
 
     compressed        = false
-    location          = "s3://${var.cur_replication_bucket_name}/account-map/"
+    location          = "s3://${var.destination_cur_bucket_name}/account-map/"
     input_format      = "org.apache.hadoop.mapred.TextInputFormat"
     number_of_buckets = -1
     output_format     = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
@@ -407,8 +419,8 @@ resource "aws_iam_policy" "org_and_s3_permissions" {
           "s3:GetObject",
         ],
         Resource = [
-          "arn:aws:s3:::${aws_s3_bucket.destination_bucket.id}",
-          "arn:aws:s3:::${aws_s3_bucket.destination_bucket.id}/*",
+          "arn:aws:s3:::${var.destination_cur_bucket_name}",
+          "arn:aws:s3:::${var.destination_cur_bucket_name}/*",
           "arn:aws:s3:::aws-athena-query-results-cid-${var.operations_account_id}-${var.aws_region}/*"
         ]
       },
@@ -472,8 +484,8 @@ resource "aws_iam_role_policy_attachment" "athena_and_glue_permissions_attach" {
 
 data "archive_file" "account_map_lambda_zip" {
   type        = "zip"
-  source_file = "${path.module}/lambda/account-map-lambda/index.js"
-  output_path = "${path.module}/lambda/account-map-lambda/index.zip"
+  source_file = "${path.root}/lambda/account-map-lambda/index.js"
+  output_path = "${path.root}/lambda/account-map-lambda/index.zip"
 }
 
 resource "aws_lambda_function" "account_mapping_lambda" {
@@ -481,7 +493,7 @@ resource "aws_lambda_function" "account_mapping_lambda" {
   description   = "Creates an Account Mapping CSV file that maps account Id's to their names and adds the Ministry Name and Billing Group information to Athena."
   role          = aws_iam_role.account_map_lambda_execution_role.arn
   handler       = "index.handler"
-  runtime       = "nodejs20.x"
+  runtime       = "nodejs18.x"
   architectures = ["x86_64"]
   memory_size   = 128
   timeout       = 300
@@ -491,10 +503,10 @@ resource "aws_lambda_function" "account_mapping_lambda" {
 
   environment {
     variables = {
-      RLS_CSV_FOLDER_URI          = "s3://${aws_s3_bucket.destination_bucket.id}/rls/"
+      RLS_CSV_FOLDER_URI          = "s3://${var.destination_cur_bucket_name}/rls/"
       ACCOUNT_MAPPING_TABLE_NAME  = aws_glue_catalog_table.account_mapping_table.name
-      CUR_TALBE_NAME              = local.glue_table_name
-      COST_AND_USAGE_REPORT_TABLE = var.cost_and_usage_report_table_name
+      CUR_TALBE_NAME              = var.cur_table_name
+      COST_AND_USAGE_REPORT_TABLE = var.cur_table_name
     }
   }
 }

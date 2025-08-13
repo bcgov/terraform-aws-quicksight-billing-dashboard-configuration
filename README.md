@@ -57,7 +57,7 @@ The RLS feature in this solution is pivotal for controlling access to the QuickS
 |------|---------|
 | <a name="provider_archive"></a> [archive](#provider\_archive) | n/a |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | ~>5.0 |
-| <a name="provider_aws.master-account"></a> [aws.master-account](#provider\_aws.master-account) | ~>5.0 |
+| <a name="provider_aws.Management-account"></a> [aws.Management-account](#provider\_aws.Management-account) | ~>5.0 |
 | <a name="provider_keycloak"></a> [keycloak](#provider\_keycloak) | >= 4.1.0 |
 
 ## Modules
@@ -120,7 +120,7 @@ The RLS feature in this solution is pivotal for controlling access to the QuickS
 | [keycloak_user_roles.service_account_user_roles](https://registry.terraform.io/providers/mrparkers/keycloak/latest/docs/resources/user_roles) | resource |
 | [archive_file.account_map_lambda_zip](https://registry.terraform.io/providers/hashicorp/archive/latest/docs/data-sources/file) | data source |
 | [archive_file.rls_lambda_zip](https://registry.terraform.io/providers/hashicorp/archive/latest/docs/data-sources/file) | data source |
-| [aws_kms_key.master_account_key_by_alias](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/kms_key) | data source |
+| [aws_kms_key.management_account_key_by_alias](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/kms_key) | data source |
 | [aws_kms_key.operations_account_key_by_alias](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/kms_key) | data source |
 | [keycloak_openid_client.realm_management](https://registry.terraform.io/providers/mrparkers/keycloak/latest/docs/data-sources/openid_client) | data source |
 | [keycloak_openid_client_service_account_user.rls_lambda_service_account_user](https://registry.terraform.io/providers/mrparkers/keycloak/latest/docs/data-sources/openid_client_service_account_user) | data source |
@@ -141,7 +141,7 @@ The RLS feature in this solution is pivotal for controlling access to the QuickS
 | <a name="input_QuickSightUser"></a> [QuickSightUser](#input\_QuickSightUser) | User name of QuickSight user (as displayed in QuickSight admin panel). The RLS DataSource and DataSet will be owned by this user. | `string` | n/a | yes |
 | <a name="input_RLSLambdaScheduleExpression"></a> [RLSLambdaScheduleExpression](#input\_RLSLambdaScheduleExpression) | The cron schedule for the RLS Lambda to run. Default is every 30 mins, 8am-5:30pm MON-FRI | `string` | `"cron(0/30 8-17 ? * MON-FRI *)"` | no |
 | <a name="input_RLSLambdaTimezone"></a> [RLSLambdaTimezone](#input\_RLSLambdaTimezone) | The timezone for the RLSLambda EventBridge scheduler | `string` | `"Canada/Pacific"` | no |
-| <a name="input_aws_master_account_id"></a> [aws\_master\_account\_id](#input\_aws\_master\_account\_id) | Account id of the aws master (or) management account | `string` | n/a | yes |
+| <a name="input_aws_management_account_id"></a> [aws\_management\_account\_id](#input\_aws\_management\_account\_id) | Account id of the aws management (or) management account | `string` | n/a | yes |
 | <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | AWS region to deploy resources | `string` | `"ca-central-1"` | no |
 | <a name="input_aws_saml_idp_arn"></a> [aws\_saml\_idp\_arn](#input\_aws\_saml\_idp\_arn) | Name of the saml identity provider in the aws account | `string` | n/a | yes |
 | <a name="input_bcgov_roles_access"></a> [bcgov\_roles\_access](#input\_bcgov\_roles\_access) | Name of the Bc gov role that is needed to get access to the Quicksight dashboards | `string` | n/a | yes |
@@ -156,8 +156,8 @@ The RLS feature in this solution is pivotal for controlling access to the QuickS
 | <a name="input_kc_realm"></a> [kc\_realm](#input\_kc\_realm) | realm name of the Keycloak | `any` | n/a | yes |
 | <a name="input_kc_terraform_auth_client_id"></a> [kc\_terraform\_auth\_client\_id](#input\_kc\_terraform\_auth\_client\_id) | Id of client used to connect to keycloack | `any` | n/a | yes |
 | <a name="input_kc_terraform_auth_client_secret"></a> [kc\_terraform\_auth\_client\_secret](#input\_kc\_terraform\_auth\_client\_secret) | secret of client used to connect to keycloack | `any` | n/a | yes |
-| <a name="input_master_account_kms_key_alias"></a> [master\_account\_kms\_key\_alias](#input\_master\_account\_kms\_key\_alias) | Alias of the master account kms encryption key | `string` | n/a | yes |
-| <a name="input_operations_account_id"></a> [operations\_account\_id](#input\_operations\_account\_id) | Account id of the aws master (or) management account | `string` | n/a | yes |
+| <a name="input_management_account_kms_key_alias"></a> [management\_account\_kms\_key\_alias](#input\_management\_account\_kms\_key\_alias) | Alias of the management account kms encryption key | `string` | n/a | yes |
+| <a name="input_operations_account_id"></a> [operations\_account\_id](#input\_operations\_account\_id) | Account id of the aws management (or) management account | `string` | n/a | yes |
 | <a name="input_operations_account_kms_key_alias"></a> [operations\_account\_kms\_key\_alias](#input\_operations\_account\_kms\_key\_alias) | Alias of the operations account kms encryption key | `string` | n/a | yes |
 | <a name="input_quicksight_client_id"></a> [quicksight\_client\_id](#input\_quicksight\_client\_id) | Id of the quicksight client created | `string` | `"Quicksight"` | no |
 | <a name="input_quicksight_client_name"></a> [quicksight\_client\_name](#input\_quicksight\_client\_name) | Name of the quicksight client created | `string` | `"Quicksight"` | no |
