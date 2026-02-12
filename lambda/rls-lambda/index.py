@@ -176,8 +176,7 @@ def reconcile_reader_group(group_id: str, desired_emails: set[str]):
         try:
             ids.delete_group_membership(
                 IdentityStoreId=IDENTITY_STORE_ID,
-                GroupId=group_id,
-                MemberId=current_members[email]["MemberId"],
+                MembershipId=current_members[email]["MembershipId"],
             )
         except ClientError as e:
             print(f"Could not remove {email}: {e}")
