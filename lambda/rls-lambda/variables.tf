@@ -55,21 +55,26 @@ variable "AccountMapLambdaTimezone" {
 
 variable "billing_group_regex" {
   description = "Regex to match billing group names in the AWS account. This is used to filter accounts for RLS."
-  type        = string 
+  type        = string
 }
 
 variable "quicksight_reader_group_name" {
   description = "Name of the QuickSight Reader group in IAM Identity Center"
-  type        = string 
+  type        = string
 }
 
 variable "CUDOSv5DashboardURL" {
   description = "Url of the CUDOSv5Dashboard"
-  type        = string 
+  type        = string
 }
 
 
 variable "CostIntelligenceDashboardURL" {
   description = "Url of the Cost Intelligence Dashboard"
-  type        = string 
+  type        = string
+}
+
+variable "sns_topic_arn" {
+  description = "SNS topic ARN for alarms"
+  type        = string
 }
