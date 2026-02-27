@@ -22,10 +22,15 @@ variable "QuickSightUser" {
 
 variable "billing_group_regex" {
   description = "Regex to match billing group names in the AWS account. This is used to filter accounts for RLS."
-  type        = string 
+  type        = string
 }
 
 variable "quicksight_reader_group_name" {
   description = "Name of the QuickSight Reader group in IAM Identity Center"
-  type        = string 
+  type        = string
+}
+
+variable "sns_topic_arn" {
+  description = "SNS topic ARN for alarms"
+  type        = string
 }

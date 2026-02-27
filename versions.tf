@@ -3,9 +3,12 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = "5.57.0"
-      # configuration_aliases = [
-      #   aws.Management-account
-      # ]
+      configuration_aliases = [
+        aws.Management,
+        aws.Operations,
+        aws.useast1-Management,
+        aws.useast1-operations
+      ]
     }
   }
 }
