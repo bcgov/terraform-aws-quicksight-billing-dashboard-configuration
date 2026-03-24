@@ -52,20 +52,24 @@ The RLS feature in this solution is pivotal for controlling access to the QuickS
 
 ## Providers
 
-No providers.
+| Name | Version |
+|------|---------|
+| <a name="provider_aws.Management"></a> [aws.Management](#provider\_aws.Management) | 5.57.0 |
+| <a name="provider_aws.Operations"></a> [aws.Operations](#provider\_aws.Operations) | 5.57.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_cid_dashboards"></a> [cid\_dashboards](#module\_cid\_dashboards) | github.com/aws-samples/aws-cudos-framework-deployment//legacy-terraform/cid-dashboards | 4.3.0 |
-| <a name="module_cloud-setup-destination"></a> [cloud-setup-destination](#module\_cloud-setup-destination) | github.com/aws-samples/aws-cudos-framework-deployment//legacy-terraform/cur-setup-destination | 4.3.0 |
-| <a name="module_cloud-setup-source"></a> [cloud-setup-source](#module\_cloud-setup-source) | github.com/aws-samples/aws-cudos-framework-deployment//legacy-terraform/cur-setup-source | 4.3.0 |
 | <a name="module_rls_lambda"></a> [rls\_lambda](#module\_rls\_lambda) | ./lambda/rls-lambda | n/a |
 
 ## Resources
 
-No resources.
+| Name | Type |
+|------|------|
+| [aws_cloudformation_stack.cid_dashboards](https://registry.terraform.io/providers/hashicorp/aws/5.57.0/docs/resources/cloudformation_stack) | resource |
+| [aws_cloudformation_stack.cid_dataexports_destination](https://registry.terraform.io/providers/hashicorp/aws/5.57.0/docs/resources/cloudformation_stack) | resource |
+| [aws_cloudformation_stack.cid_dataexports_source](https://registry.terraform.io/providers/hashicorp/aws/5.57.0/docs/resources/cloudformation_stack) | resource |
 
 ## Inputs
 
@@ -74,16 +78,28 @@ No resources.
 | <a name="input_QuickSightUser"></a> [QuickSightUser](#input\_QuickSightUser) | User name of QuickSight user (as displayed in QuickSight admin panel). The RLS DataSource and DataSet will be owned by this user. | `string` | n/a | yes |
 | <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | AWS region to deploy resources | `string` | `"ca-central-1"` | no |
 | <a name="input_billing_group_regex"></a> [billing\_group\_regex](#input\_billing\_group\_regex) | Regex to match billing group names in the AWS account. This is used to filter accounts for RLS. | `string` | n/a | yes |
+| <a name="input_cid_dashboard_version"></a> [cid\_dashboard\_version](#input\_cid\_dashboard\_version) | Version of the AWS-managed CID dashboard template. | `string` | `"4.4.10"` | no |
+| <a name="input_cid_data_export_version"></a> [cid\_data\_export\_version](#input\_cid\_data\_export\_version) | Version of the AWS-managed Data Exports template. | `string` | `"0.10.0"` | no |
+| <a name="input_deploy_cost_intelligence_dashboard"></a> [deploy\_cost\_intelligence\_dashboard](#input\_deploy\_cost\_intelligence\_dashboard) | Deploy Cost Intelligence dashboard. | `string` | `"yes"` | no |
+| <a name="input_deploy_cudos_v5"></a> [deploy\_cudos\_v5](#input\_deploy\_cudos\_v5) | Deploy CUDOS v5 dashboard. | `string` | `"yes"` | no |
+| <a name="input_deploy_kpi_dashboard"></a> [deploy\_kpi\_dashboard](#input\_deploy\_kpi\_dashboard) | Deploy KPI dashboard. | `string` | `"yes"` | no |
 | <a name="input_management_account_id"></a> [management\_account\_id](#input\_management\_account\_id) | Account id of the aws management (or) management account | `string` | n/a | yes |
 | <a name="input_operations_account_id"></a> [operations\_account\_id](#input\_operations\_account\_id) | Account id of the aws management (or) management account | `string` | n/a | yes |
+| <a name="input_permissions_boundary"></a> [permissions\_boundary](#input\_permissions\_boundary) | Optional IAM permissions boundary ARN. | `string` | `""` | no |
 | <a name="input_quicksight_reader_group_name"></a> [quicksight\_reader\_group\_name](#input\_quicksight\_reader\_group\_name) | Name of the QuickSight Reader group in IAM Identity Center | `string` | n/a | yes |
+| <a name="input_resource_prefix"></a> [resource\_prefix](#input\_resource\_prefix) | Prefix used by CID-created resources. | `string` | `"cid"` | no |
+| <a name="input_role_path"></a> [role\_path](#input\_role\_path) | IAM role path for CID-created roles. | `string` | `"/"` | no |
 | <a name="input_sns_topic_arn"></a> [sns\_topic\_arn](#input\_sns\_topic\_arn) | SNS topic ARN for alarms | `string` | n/a | yes |
+| <a name="input_time_granularity"></a> [time\_granularity](#input\_time\_granularity) | Data Exports granularity. | `string` | `"HOURLY"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_cur_bucket_arn"></a> [cur\_bucket\_arn](#output\_cur\_bucket\_arn) | ARN of the S3 bucket receiving the CUR |
-| <a name="output_cur_bucket_name"></a> [cur\_bucket\_name](#output\_cur\_bucket\_name) | Name of the S3 bucket receiving the CUR |
-| <a name="output_cur_report_arn"></a> [cur\_report\_arn](#output\_cur\_report\_arn) | ARN of the Cost and Usage Report |
+| <a name="output_cid_dashboards_outputs"></a> [cid\_dashboards\_outputs](#output\_cid\_dashboards\_outputs) | Outputs from the Cloud-Intelligence-Dashboards stack. |
+| <a name="output_cid_dashboards_stack_id"></a> [cid\_dashboards\_stack\_id](#output\_cid\_dashboards\_stack\_id) | CID dashboards stack ID. |
+| <a name="output_cid_dataexports_destination_outputs"></a> [cid\_dataexports\_destination\_outputs](#output\_cid\_dataexports\_destination\_outputs) | Outputs from the CID Data Exports destination stack. |
+| <a name="output_cid_dataexports_destination_stack_id"></a> [cid\_dataexports\_destination\_stack\_id](#output\_cid\_dataexports\_destination\_stack\_id) | CID Data Exports destination stack ID. |
+| <a name="output_cid_dataexports_source_outputs"></a> [cid\_dataexports\_source\_outputs](#output\_cid\_dataexports\_source\_outputs) | Outputs from the CID Data Exports source stack. |
+| <a name="output_cid_dataexports_source_stack_id"></a> [cid\_dataexports\_source\_stack\_id](#output\_cid\_dataexports\_source\_stack\_id) | CID Data Exports source stack ID. |
 <!-- END_TF_DOCS -->
