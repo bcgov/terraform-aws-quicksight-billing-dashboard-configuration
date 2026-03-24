@@ -1,64 +1,115 @@
-module "cloud-setup-destination" {
-  source = "github.com/aws-samples/aws-cudos-framework-deployment//legacy-terraform/cur-setup-destination?ref=4.3.0" # version locking
-  providers = {
-    aws         = aws.Operations
-    aws.useast1 = aws.useast1-operations
+# CID Data Exports Destination
+# Deploy in Operations account
+
+resource "aws_cloudformation_stack" "cid_dataexports_destination" {
+  provider = aws.Operations
+
+  name         = "BCGOV-LZA-CID-DataExports-Destination"
+  template_url = local.data_exports_template_url
+  capabilities = local.common_capabilities
+
+  parameters = {
+    DestinationAccountId = var.operations_account_id
+    SourceAccountIds     = local.source_account_ids_csv
+    ResourcePrefix       = var.resource_prefix
+    ManageCUR2           = "yes"
+    ManageFOCUS          = "no"
+    ManageCOH            = "no"
+    EnableSCAD           = "no"
+    RolePath             = var.role_path
+    CUR2TimeGranularity  = var.time_granularity
   }
-  source_account_ids = ["${var.management_account_id}"] # Comma-separated list of Payer account IDs
-  create_cur         = false
-  tags = {
-    Name = "BCGOV-LZA"
+
+  tags = local.common_tags
+
+  timeouts {
+    create = "45m"
+    update = "45m"
+    delete = "45m"
   }
 }
 
-output "cur_bucket_arn" {
-  description = "ARN of the S3 bucket receiving the CUR"
-  value       = module.cloud-setup-destination.cur_bucket_arn
+# CID Data Exports Source
+# Deploy in Management account
+
+resource "aws_cloudformation_stack" "cid_dataexports_source" {
+  provider = aws.Management
+
+  name         = "BCGOV-LZA-CID-DataExports-Source"
+  template_url = local.data_exports_template_url
+  capabilities = local.common_capabilities
+
+  parameters = {
+    DestinationAccountId = var.operations_account_id
+    SourceAccountIds     = local.source_account_ids_csv
+    ResourcePrefix       = var.resource_prefix
+    ManageCUR2           = "yes"
+    ManageFOCUS          = "no"
+    ManageCOH            = "no"
+    EnableSCAD           = "no"
+    RolePath             = var.role_path
+    CUR2TimeGranularity  = var.time_granularity
+  }
+
+  tags = local.common_tags
+
+  timeouts {
+    create = "45m"
+    update = "45m"
+    delete = "45m"
+  }
+
+  depends_on = [
+    aws_cloudformation_stack.cid_dataexports_destination
+  ]
 }
 
-output "cur_bucket_name" {
-  description = "Name of the S3 bucket receiving the CUR"
-  value       = module.cloud-setup-destination.cur_bucket_name
-}
 
-module "cloud-setup-source" {
-  source = "github.com/aws-samples/aws-cudos-framework-deployment//legacy-terraform/cur-setup-source?ref=4.3.0" # version locking
-  providers = {
-    aws         = aws.Management
-    aws.useast1 = aws.useast1-Management
-  }
-  destination_bucket_arn = module.cloud-setup-destination.cur_bucket_arn
-  tags = {
-    Name = "BCGOV-LZA"
-  }
-  depends_on = [module.cloud-setup-destination]
-}
-output "cur_report_arn" {
-  description = "ARN of the Cost and Usage Report"
-  value       = module.cloud-setup-source.cur_report_arn
-}
+# Cloud Intelligence Dashboards
+# Deploy in Operations account
+resource "aws_cloudformation_stack" "cid_dashboards" {
+  provider = aws.Operations
 
-module "cid_dashboards" {
-  source = "github.com/aws-samples/aws-cudos-framework-deployment//legacy-terraform/cid-dashboards?ref=4.3.0" # version locking
-  providers = {
-    aws = aws.Operations
-  }
-  stack_name      = "Cloud-Intelligence-Dashboards"
-  template_bucket = module.cloud-setup-destination.cur_bucket_name
-  stack_parameters = {
-    "PrerequisitesQuickSight"            = "yes"
-    "PrerequisitesQuickSightPermissions" = "yes"
-    CURVersion                           = "1.0"
-    "QuickSightUser"                     = "${var.QuickSightUser}"
-    "CURBucketPath"                      = "s3://${module.cloud-setup-destination.cur_bucket_name}/cur/${var.management_account_id}/cid-cur/cid-cur/"
-    "DeployCUDOSv5"                      = "yes"
-    "DeployCUDOSDashboard"               = "no"
-    "DeployCostIntelligenceDashboard"    = "yes"
-    "DeployKPIDashboard"                 = "yes"
-  }
-  depends_on = [module.cloud-setup-destination]
-}
+  name         = "BCGOV-LZA-Cloud-Intelligence-Dashboards"
+  template_url = local.cid_dashboard_template_url
+  capabilities = local.common_capabilities
 
+  parameters = {
+    PrerequisitesQuickSight            = "yes"
+    PrerequisitesQuickSightPermissions = "yes"
+    QuickSightUser                     = var.QuickSightUser
+
+    # CUR 2.0
+    CURVersion         = "2.0"
+    KeepLegacyCURTable = "no"
+
+    # Dashboards
+    DeployCUDOSv5                   = var.deploy_cudos_v5
+    DeployCUDOSDashboard            = "no"
+    DeployCostIntelligenceDashboard = var.deploy_cost_intelligence_dashboard
+    DeployKPIDashboard              = var.deploy_kpi_dashboard
+
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      DashboardType = "Foundational"
+      DashboardId   = "cloud-intelligence-dashboards"
+    }
+  )
+
+  timeouts {
+    create = "60m"
+    update = "60m"
+    delete = "60m"
+  }
+
+  depends_on = [
+    aws_cloudformation_stack.cid_dataexports_destination,
+    aws_cloudformation_stack.cid_dataexports_source
+  ]
+}
 
 module "rls_lambda" {
   source = "./lambda/rls-lambda"
@@ -68,12 +119,12 @@ module "rls_lambda" {
   QuickSightUser               = var.QuickSightUser
   management_account_id        = var.management_account_id
   operations_account_id        = var.operations_account_id
-  destination_cur_bucket_name  = module.cloud-setup-destination.cur_bucket_name
-  cur_table_name               = replace(element(split("/", module.cloud-setup-source.cur_report_arn), -1), "-", "_")
+  destination_cur_bucket_name  = aws_cloudformation_stack.cid_dataexports_destination.outputs["AggregateBucketName"]
+  cur_table_name               = "cur2"
   billing_group_regex          = var.billing_group_regex
   quicksight_reader_group_name = var.quicksight_reader_group_name
-  CUDOSv5DashboardURL          = module.cid_dashboards.stack_outputs["CUDOSv5DashboardURL"]
-  CostIntelligenceDashboardURL = module.cid_dashboards.stack_outputs["CostIntelligenceDashboardURL"]
+  CUDOSv5DashboardURL          = aws_cloudformation_stack.cid_dashboards.outputs["CUDOSv5DashboardURL"]
+  CostIntelligenceDashboardURL = aws_cloudformation_stack.cid_dashboards.outputs["CostIntelligenceDashboardURL"]
   sns_topic_arn                = var.sns_topic_arn
-  depends_on                   = [module.cid_dashboards]
+  depends_on                   = [aws_cloudformation_stack.cid_dashboards]
 }
