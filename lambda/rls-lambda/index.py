@@ -14,6 +14,7 @@ from botocore.exceptions import ClientError
 IDENTITY_STORE_ID   = os.environ["IDENTITY_STORE_ID"]
 BILLING_GROUP_REGEX = re.compile(os.environ["BILLING_GROUP_REGEX"], re.I)
 READER_GROUP_NAME   = os.environ["QUICKSIGHT_READER_GROUP_NAME"]
+QUICKSIGHT_DASHBOARD_ADMIN_GROUP_NAME    = os.environ["QUICKSIGHT_DASHBOARD_ADMIN_GROUP_NAME"]
 
 RLS_BUCKET = os.environ["RLS_CSV_BUCKET_NAME"]
 RLS_KEY    = "rls/rls.csv"  
@@ -41,7 +42,7 @@ def paginate(method, key: str, **kwargs):
 
 
 def list_billing_groups():
-    #All groups whose display name matches BILLING_GROUP_REGEX pattern.
+    # All groups whose display name matches BILLING_GROUP_REGEX pattern.
     return [
         g for g in paginate(
             ids.list_groups,
@@ -108,9 +109,28 @@ def find_user_id_by_email(email: str) -> str | None:
     return None
 
 
+def list_admin_users() -> set[str]:
+    admin_group = find_group_by_name(QUICKSIGHT_DASHBOARD_ADMIN_GROUP_NAME)
+    if not admin_group:
+        print(f"Admin group {QUICKSIGHT_DASHBOARD_ADMIN_GROUP_NAME} not found. no admin users will get global access")
+        return set()
+
+    admin_emails = set()
+    for memb in list_group_members(admin_group["GroupId"]):
+        email = describe_user_email(memb["MemberId"]["UserId"])
+        admin_emails.add(email)
+
+    print(f"Found {len(admin_emails)} admin users in group {QUICKSIGHT_DASHBOARD_ADMIN_GROUP_NAME}")
+    return admin_emails
+
+
 def lambda_handler(event, _context):
     user_to_accts: dict[str, set[str]] = defaultdict(set)
-    # print (list_billing_groups())
+
+    # users in this group get full access and should not be added again with specific accounts
+    admin_users = list_admin_users()
+
+    # print(list_billing_groups())
     for group in list_billing_groups():
         plate = group["DisplayName"].split("_")[3].lower()
         print(plate)
@@ -119,19 +139,26 @@ def lambda_handler(event, _context):
 
         for memb in list_group_members(group["GroupId"]):
             email = describe_user_email(memb["MemberId"]["UserId"])
+
+            # skip account-specific mapping for admin users
+            if email in admin_users:
+                continue
+
             user_to_accts[email].update(account_ids)
 
     reader_group = find_group_by_name(READER_GROUP_NAME)
     if reader_group:
-        reconcile_reader_group(reader_group["GroupId"], set(user_to_accts))
+        # include admin users too, so they are also part of reader group reconcile
+        reconcile_reader_group(reader_group["GroupId"], set(user_to_accts) | admin_users)
     else:
         print(f"Reader group {READER_GROUP_NAME} not found; skipping reconcile")
 
     # 3 ─ write CSV to S3
-    csv_body = build_csv(user_to_accts)
+    csv_body = build_csv(user_to_accts, admin_users)  # CHANGED
     s3.put_object(Bucket=RLS_BUCKET, Key=RLS_KEY, Body=csv_body, ContentType="text/csv")
-    print(f"Uploaded rls.csv with {len(user_to_accts)} users")
+    print(f"Uploaded rls.csv with {len(user_to_accts) + len(admin_users)} users")
     print(user_to_accts)
+    print(f"Admin users with full access: {admin_users}")
 
     # 4 ─ trigger QuickSight ingestion
     run_id = datetime.utcnow().isoformat(timespec="seconds").replace(":", "-")
@@ -142,14 +169,22 @@ def lambda_handler(event, _context):
         IngestionType="FULL_REFRESH",
     )
     print("QuickSight ingestion started")
-    return {"status": "ok", "rows": len(user_to_accts)}
+    return {"status": "ok", "rows": len(user_to_accts) + len(admin_users)}
 
-def build_csv(user_map: dict[str, set[str]]) -> bytes:
+
+def build_csv(user_map: dict[str, set[str]], admin_users: set[str]) -> bytes:
     buf = io.StringIO()
 
+    # admin users get blank account field = full access
+    for email in sorted(admin_users):
+        buf.write(f"{email},\n")
+
     for email, acct_set in sorted(user_map.items()):
-        joined = ",".join(sorted(acct_set)) 
-        buf.write(f'{email},"{joined}"\n')           
+        # extra guard
+        if email in admin_users:
+            continue
+        joined = ",".join(sorted(acct_set))
+        buf.write(f'{email},"{joined}"\n')
 
     return buf.getvalue().encode()
 

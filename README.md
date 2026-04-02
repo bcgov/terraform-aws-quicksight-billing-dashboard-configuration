@@ -86,6 +86,7 @@ The RLS feature in this solution is pivotal for controlling access to the QuickS
 | <a name="input_management_account_id"></a> [management\_account\_id](#input\_management\_account\_id) | Account id of the aws management (or) management account | `string` | n/a | yes |
 | <a name="input_operations_account_id"></a> [operations\_account\_id](#input\_operations\_account\_id) | Account id of the aws management (or) management account | `string` | n/a | yes |
 | <a name="input_permissions_boundary"></a> [permissions\_boundary](#input\_permissions\_boundary) | Optional IAM permissions boundary ARN. | `string` | `""` | no |
+| <a name="input_quicksight_dashboard_admin_group_name"></a> [quicksight\_dashboard\_admin\_group\_name](#input\_quicksight\_dashboard\_admin\_group\_name) | Name of the Quicksight dashboard admin group in IAM Identity Center | `string` | n/a | yes |
 | <a name="input_quicksight_reader_group_name"></a> [quicksight\_reader\_group\_name](#input\_quicksight\_reader\_group\_name) | Name of the QuickSight Reader group in IAM Identity Center | `string` | n/a | yes |
 | <a name="input_resource_prefix"></a> [resource\_prefix](#input\_resource\_prefix) | Prefix used by CID-created resources. | `string` | `"cid"` | no |
 | <a name="input_role_path"></a> [role\_path](#input\_role\_path) | IAM role path for CID-created roles. | `string` | `"/"` | no |
