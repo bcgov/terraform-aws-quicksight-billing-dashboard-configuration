@@ -251,12 +251,13 @@ resource "aws_lambda_function" "rls_lambda" {
 
   environment {
     variables = {
-      DATASET_ARN                  = aws_quicksight_data_set.rls_athena_data_set.arn
-      RLS_CSV_BUCKET_NAME          = var.destination_cur_bucket_name
-      AWS_ACCOUNT_ID               = var.operations_account_id
-      IDENTITY_STORE_ID            = tolist(data.aws_ssoadmin_instances.iam_identity_center_instance.identity_store_ids)[0]
-      BILLING_GROUP_REGEX          = var.billing_group_regex
-      QUICKSIGHT_READER_GROUP_NAME = var.quicksight_reader_group_name
+      DATASET_ARN                           = aws_quicksight_data_set.rls_athena_data_set.arn
+      RLS_CSV_BUCKET_NAME                   = var.destination_cur_bucket_name
+      AWS_ACCOUNT_ID                        = var.operations_account_id
+      IDENTITY_STORE_ID                     = tolist(data.aws_ssoadmin_instances.iam_identity_center_instance.identity_store_ids)[0]
+      BILLING_GROUP_REGEX                   = var.billing_group_regex
+      QUICKSIGHT_READER_GROUP_NAME          = var.quicksight_reader_group_name
+      QUICKSIGHT_DASHBOARD_ADMIN_GROUP_NAME = var.quicksight_dashboard_admin_group_name
     }
   }
   lifecycle {

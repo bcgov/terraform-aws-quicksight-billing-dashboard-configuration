@@ -63,6 +63,11 @@ variable "quicksight_reader_group_name" {
   type        = string
 }
 
+variable "quicksight_dashboard_admin_group_name" {
+  description = "Name of the Quicksight dashboard admin group in IAM Identity Center"
+  type        = string
+}
+
 variable "CUDOSv5DashboardURL" {
   description = "Url of the CUDOSv5Dashboard"
   type        = string

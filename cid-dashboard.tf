@@ -116,15 +116,16 @@ module "rls_lambda" {
   providers = {
     aws = aws.Operations
   }
-  QuickSightUser               = var.QuickSightUser
-  management_account_id        = var.management_account_id
-  operations_account_id        = var.operations_account_id
-  destination_cur_bucket_name  = aws_cloudformation_stack.cid_dataexports_destination.outputs["AggregateBucketName"]
-  cur_table_name               = "cur2"
-  billing_group_regex          = var.billing_group_regex
-  quicksight_reader_group_name = var.quicksight_reader_group_name
-  CUDOSv5DashboardURL          = aws_cloudformation_stack.cid_dashboards.outputs["CUDOSv5DashboardURL"]
-  CostIntelligenceDashboardURL = aws_cloudformation_stack.cid_dashboards.outputs["CostIntelligenceDashboardURL"]
-  sns_topic_arn                = var.sns_topic_arn
-  depends_on                   = [aws_cloudformation_stack.cid_dashboards]
+  QuickSightUser                        = var.QuickSightUser
+  management_account_id                 = var.management_account_id
+  operations_account_id                 = var.operations_account_id
+  destination_cur_bucket_name           = aws_cloudformation_stack.cid_dataexports_destination.outputs["AggregateBucketName"]
+  cur_table_name                        = "cur2"
+  billing_group_regex                   = var.billing_group_regex
+  quicksight_reader_group_name          = var.quicksight_reader_group_name
+  quicksight_dashboard_admin_group_name = var.quicksight_dashboard_admin_group_name
+  CUDOSv5DashboardURL                   = aws_cloudformation_stack.cid_dashboards.outputs["CUDOSv5DashboardURL"]
+  CostIntelligenceDashboardURL          = aws_cloudformation_stack.cid_dashboards.outputs["CostIntelligenceDashboardURL"]
+  sns_topic_arn                         = var.sns_topic_arn
+  depends_on                            = [aws_cloudformation_stack.cid_dashboards]
 }
