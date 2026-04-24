@@ -92,32 +92,40 @@ const {
         console.log("Successfully uploaded CSV to S3. Response: ", s3Response);
         const athenaResponse = await athenaClient.send(
           new StartQueryExecutionCommand({
-            QueryString: `CREATE OR REPLACE VIEW "account_map" AS 
+            QueryString: `CREATE OR REPLACE VIEW "account_map" AS
             SELECT DISTINCT
               a.line_item_usage_account_id "account_id"
             , a.bill_payer_account_id "parent_account_id"
             , b.account_name
+            , p.account_name "parent_account_name"
             , b.account_email_id
             , b.ministry_name
             , b.billing_group
             FROM
-              ((
-              SELECT DISTINCT
-                line_item_usage_account_id
-              , bill_payer_account_id
-              FROM
-              cid_cur.${COST_AND_USAGE_REPORT_TABLE}
-            )  a
-            LEFT JOIN (
-              SELECT DISTINCT
-                "lpad"("account_id", 12, '0') "account_id"
-              , account_name
-              , account_email_id
-              , ministry_name
-              , billing_group
-              FROM
-                cid_cur.${ACCOUNT_MAPPING_TABLE_NAME}
-            )  b ON (b.account_id = a.line_item_usage_account_id))
+              (
+                SELECT DISTINCT
+                  line_item_usage_account_id
+                , bill_payer_account_id
+                FROM
+                  bcgov_data_export.${COST_AND_USAGE_REPORT_TABLE}
+              ) a
+              LEFT JOIN (
+                SELECT DISTINCT
+                  "lpad"("account_id", 12, '0') "account_id"
+                , account_name
+                , account_email_id
+                , ministry_name
+                , billing_group
+                FROM
+                  cid_cur.${ACCOUNT_MAPPING_TABLE_NAME}
+              ) b ON (b.account_id = a.line_item_usage_account_id)
+              LEFT JOIN (
+                SELECT DISTINCT
+                  "lpad"("account_id", 12, '0') "account_id"
+                , account_name
+                FROM
+                  cid_cur.${ACCOUNT_MAPPING_TABLE_NAME}
+              ) p ON (p.account_id = a.bill_payer_account_id)
             `,
             QueryExecutionContext: {
               Database: "cid_cur",
