@@ -241,7 +241,7 @@ resource "aws_lambda_function" "rls_lambda" {
   description   = "Creates the RLS CSV file and refreshes all datasets that use it"
   role          = aws_iam_role.RLSLambdaExecutionRole.arn
   handler       = "index.lambda_handler"
-  runtime       = "python3.10"
+  runtime       = "python3.12"
   architectures = ["x86_64"]
   memory_size   = 128
   timeout       = 600
