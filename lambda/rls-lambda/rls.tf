@@ -494,7 +494,7 @@ resource "aws_lambda_function" "account_mapping_lambda" {
   description   = "Creates an Account Mapping CSV file that maps account Id's to their names and adds the Ministry Name and Billing Group information to Athena."
   role          = aws_iam_role.account_map_lambda_execution_role.arn
   handler       = "index.handler"
-  runtime       = "nodejs18.x"
+  runtime       = "nodejs22.x"
   architectures = ["x86_64"]
   memory_size   = 128
   timeout       = 300
@@ -506,7 +506,6 @@ resource "aws_lambda_function" "account_mapping_lambda" {
     variables = {
       RLS_CSV_FOLDER_URI          = "s3://${var.destination_cur_bucket_name}/rls/"
       ACCOUNT_MAPPING_TABLE_NAME  = aws_glue_catalog_table.account_mapping_table.name
-      CUR_TALBE_NAME              = var.cur_table_name
       COST_AND_USAGE_REPORT_TABLE = var.cur_table_name
     }
   }
