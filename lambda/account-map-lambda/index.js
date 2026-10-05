@@ -14,7 +14,11 @@ const {
   const ACCOUNT_MAPPING_TABLE_NAME = process.env.ACCOUNT_MAPPING_TABLE_NAME;
   const COST_AND_USAGE_REPORT_TABLE = process.env.COST_AND_USAGE_REPORT_TABLE;
 
-  const orgClient = new OrganizationsClient({ region: "ca-central-1" });
+  const orgClient = new OrganizationsClient({
+    region: "ca-central-1",
+    maxAttempts: 6,
+    retryMode: "standard",
+  });
   const s3Client = new S3Client({ region: "ca-central-1" });
   const athenaClient = new AthenaClient({ region: "ca-central-1" });
 
