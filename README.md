@@ -48,14 +48,14 @@ The RLS feature in this solution is pivotal for controlling access to the QuickS
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.57.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 6.62.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws.Management"></a> [aws.Management](#provider\_aws.Management) | 5.57.0 |
-| <a name="provider_aws.Operations"></a> [aws.Operations](#provider\_aws.Operations) | 5.57.0 |
+| <a name="provider_aws.Management"></a> [aws.Management](#provider\_aws.Management) | 6.62.0 |
+| <a name="provider_aws.Operations"></a> [aws.Operations](#provider\_aws.Operations) | 6.62.0 |
 
 ## Modules
 
@@ -67,9 +67,9 @@ The RLS feature in this solution is pivotal for controlling access to the QuickS
 
 | Name | Type |
 |------|------|
-| [aws_cloudformation_stack.cid_dashboards](https://registry.terraform.io/providers/hashicorp/aws/5.57.0/docs/resources/cloudformation_stack) | resource |
-| [aws_cloudformation_stack.cid_dataexports_destination](https://registry.terraform.io/providers/hashicorp/aws/5.57.0/docs/resources/cloudformation_stack) | resource |
-| [aws_cloudformation_stack.cid_dataexports_source](https://registry.terraform.io/providers/hashicorp/aws/5.57.0/docs/resources/cloudformation_stack) | resource |
+| [aws_cloudformation_stack.cid_dashboards](https://registry.terraform.io/providers/hashicorp/aws/6.62.0/docs/resources/cloudformation_stack) | resource |
+| [aws_cloudformation_stack.cid_dataexports_destination](https://registry.terraform.io/providers/hashicorp/aws/6.62.0/docs/resources/cloudformation_stack) | resource |
+| [aws_cloudformation_stack.cid_dataexports_source](https://registry.terraform.io/providers/hashicorp/aws/6.62.0/docs/resources/cloudformation_stack) | resource |
 
 ## Inputs
 
